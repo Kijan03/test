@@ -31,7 +31,8 @@ MyBoolVector::~MyBoolVector()
 void MyBoolVector::pop_back() {
 	//postcondition: 
 
-	v_capacity = v_capacity - 1;
+	data[v_used-1] = "NULL";
+	v_used--;
 }
 
 void MyBoolVector::push_back(bool x)
@@ -39,11 +40,12 @@ void MyBoolVector::push_back(bool x)
 	//precondition: 불값(true or false)
 	//postcondition: v_used 다음 값에 입력받은 x값을 삽입
 
-	if (v_capacity == v_used)
+	if (v_capacity <= v_used)
 	{
-		v_capacity *= 2;
+		reserve(v_used * 2);
 	}
-	data[v_used++] = x;
+	data[v_used] = x;
+	v_used++;
 }
 
 size_t MyBoolVector::capacity() const
@@ -67,14 +69,13 @@ void MyBoolVector::reserve(size_t new_capacity)
 		return;
 	if (new_capacity < v_used)
 	{
-		new_capacity = v_used;
-
-		larger_array = new value_type[new_capacity];
-		copy(data, data + v_used, larger_array);
-		delete[] data;
-		data = larger_array;
-		v_capacity = new_capacity;
+		new_capacity = v_used;	
 	}
+	larger_array = new value_type[new_capacity];
+	copy(data, data + v_used, larger_array);
+	delete[] data;
+	data = larger_array;
+	v_capacity = new_capacity;
 }
 
 bool MyBoolVector::is_empty() const
@@ -115,7 +116,10 @@ bool MyBoolVector::operator = (const MyBoolVector& source)
 
 bool MyBoolVector::operator+=(const MyBoolVector& addend)
 {
-	assert(size() + addend.size() <= v_capacity);
+	if (size() + addend.size() > v_capacity)
+	{
+		reserve(v_used + addend.v_used);
+	}
 
 	copy(addend.data, addend.data + addend.v_used, data + v_used);
 	v_used += addend.v_used;
@@ -125,7 +129,7 @@ bool MyBoolVector::operator+=(const MyBoolVector& addend)
 
 bool MyBoolVector::operator[](size_t num)
 {
-	assert(num <= v_used);
+	assert(num < v_used);
 	return data[num];
 }
 
